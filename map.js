@@ -10,43 +10,51 @@ mapboxgl.accessToken = 'pk.eyJ1IjoicGRocnV2LTA5IiwiYSI6ImNtN2t6djRqcDAyeWkybnB2Z
 // Initialize the map
 const map = new mapboxgl.Map({
   container: 'map', // ID of the div where the map will render
-  style: 'mapbox://styles/mapbox/navigation-night-v1', // Map style
-  center: [-71.09415, 42.36027], // [longitude, latitude]
+  style: 'mapbox://styles/pdhruv-09/cm7l4bjhf003o01su5ca46v6l', // Custom Mapbox Studio style
+  center: [-71.09415, 42.36027], // [longitude, latitude] for Boston
   zoom: 12, // Initial zoom level
   minZoom: 5, // Minimum allowed zoom
   maxZoom: 18 // Maximum allowed zoom
 });
 
-// Wait for the map to load before adding data
-map.on('load', async () => {
-    console.log("Map has loaded!");
-
-    // Load the GeoJSON file
+// Function to load and display bike lanes
+async function addBikeLanes(sourceId, layerId, geojsonPath, color) {
     try {
-        const response = await fetch('assets/JSON/Existing_Bike_Network_2022.geojson'); // Ensure the path is correct
+        const response = await fetch(geojsonPath);
         const bikeData = await response.json();
-        console.log("Bike lane data loaded:", bikeData);
+        console.log(`${sourceId} data loaded:`, bikeData);
 
         // Add GeoJSON source to the map
-        map.addSource('bike-lanes', {
+        map.addSource(sourceId, {
             type: 'geojson',
             data: bikeData
         });
 
         // Add a layer to visualize the bike lanes
         map.addLayer({
-            id: 'bike-lane-layer',
+            id: layerId,
             type: 'line',
-            source: 'bike-lanes',
+            source: sourceId,
             paint: {
-                'line-color': '#00FF00',  // Green color for bike lanes
-                'line-width': 3,          // Line thickness
-                'line-opacity': 0.7       // Adjust transparency
+                'line-color': color,  // Color for bike lanes
+                'line-width': 3,      // Line thickness
+                'line-opacity': 0.7   // Adjust transparency
             }
         });
 
-        console.log("Bike lanes added to the map.");
+        console.log(`${sourceId} added to the map.`);
     } catch (error) {
-        console.error("Error loading GeoJSON file:", error);
+        console.error(`Error loading ${sourceId}:`, error);
     }
+}
+
+// Wait for the map to load before adding data
+map.on('load', async () => {
+    console.log("Map has loaded!");
+
+    // Add Boston bike lanes (green)
+    await addBikeLanes('bike-lanes-boston', 'bike-lane-layer-boston', 'assets/JSON/Existing_Bike_Network_2022.geojson', '#00FF00');
+
+    // Add Cambridge bike lanes (blue)
+    await addBikeLanes('bike-lanes-cambridge', 'bike-lane-layer-cambridge', 'assets/JSON/Existing_Bike_Network_Cambridge.geojson', '#0000FF');
 });
