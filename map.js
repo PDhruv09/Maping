@@ -25,29 +25,34 @@ async function addBikeLanes(sourceId, layerId, geojsonPath, color) {
         const bikeData = await response.json();
         console.log(`${sourceId} data loaded:`, bikeData);
 
-        map.addSource(sourceId, {
-            type: 'geojson',
-            data: bikeData
-        });
+        // Ensure the source is added only once
+        if (!map.getSource(sourceId)) {
+            map.addSource(sourceId, {
+                type: 'geojson',
+                data: bikeData
+            });
 
-        map.addLayer({
-            id: layerId,
-            type: 'line',
-            source: sourceId,
-            paint: {
-                'line-color': color,
-                'line-width': 3,
-                'line-opacity': 0.7
-            }
-        });
+            map.addLayer({
+                id: layerId,
+                type: 'line',
+                source: sourceId,
+                paint: {
+                    'line-color': color,
+                    'line-width': 3,
+                    'line-opacity': 0.7
+                }
+            });
 
-        console.log(`${sourceId} added to the map.`);
+            console.log(`${sourceId} added to the map.`);
+        } else {
+            console.log(`Source ${sourceId} already exists.`);
+        }
     } catch (error) {
         console.error(`Error loading ${sourceId}:`, error);
     }
 }
 
-// Function to add an SVG overlay for Bluebikes stations using D3
+// Function to add bike stations and traffic visualization
 async function addBikeStations(stationsJsonPath, trafficCsvUrl) {
     try {
         const response = await fetch(stationsJsonPath);
@@ -106,16 +111,9 @@ async function addBikeStations(stationsJsonPath, trafficCsvUrl) {
             .attr('stroke', 'white')
             .attr('stroke-width', 1)
             .attr('opacity', 0.6)
-            .on('mouseover', function (event, d) {
-                d3.select(this).attr('fill', 'yellow');
-            })
-            .on('mouseout', function (event, d) {
-                d3.select(this).attr('fill', 'steelblue');
-            })
-            .each(function(d) {
-                d3.select(this)
-                  .append('title')
-                  .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+            .each(function (d) {
+                d3.select(this).append('title')
+                    .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
             });
 
         // Function to update circle positions when the map moves/zooms

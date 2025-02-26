@@ -1,38 +1,41 @@
 <!-- home.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Template Main CSS File -->
     <link  href="assets/css/style.css" rel="stylesheet">
-    <!-- Mapbox GL JS CSS -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
-    <title>Maping project for lab 7</title>
+    <title>Mapping Project for Lab 7</title>
 </head>
 <body>
     
-    <h1>🚴🏼‍♀️ Bikewatching</h1>
+    <header>
+        <h1>🚴🏼‍♀️ Bikewatching</h1>
+        <label id="time-filter">
+            Filter by time: 
+            <input type="range" id="time-slider" min="-1" max="1440" step="1" value="-1">
+            <time id="selected-time"></time>
+            <em id="any-time">(any time)</em>
+        </label>
+    </header>
+
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <div id="map"></div>
 
-    <!-- Footer (Common Contact Information) -->
     <footer id="footer">
-        <!-- Social Media Page -->
         <section id="contact" class="left">
             <p>Contact Information</p>
             <p>Personal Email: dhruvkpatel004@gmail.com</p>
             <p>Work Email: dhruv.patel.imp@gmail.com</p>
             <p>Phone: +1 747-257-7194</p>
         </section>
-        <!-- Social Media Page -->
         <section id="social" class="right">
             <h4>Social Media Handles</h4>
             <p><a href="https://www.linkedin.com/in/dhruv-patel-40b923228">LinkedIn</a></p>
-            <p><a href="https://www.instagram.com/dhruvkpatel004?igsh=OGQ5ZDc2ODk2ZA%3D%3D&utm_source=qr">Instagram</a></p>
+            <p><a href="https://www.instagram.com/dhruvkpatel004">Instagram</a></p>
         </section>
-
     </footer>
+
     <script type="module" src="map.js"></script>
 </body>
 </html>
