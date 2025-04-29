@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // ✅ Function to generate the navigation bar
 function generateNavigation() {
-    const rootPath = "/Dhruv_Patel_website/";
+    const rootPath = "/Maping/";
     const pages = [
         { url: "index.html", title: "Home" },
         { url: "How/index.html", title: "How" },
-        { url: "Contact/index.html", title: "GitHub" },
+        { url: "https://github.com/PDhruv09/Maping", title: "GitHub" },
         { url: "https://github.com/PDhruv09", title: "GitHub Portfolio" }
     ];
     
