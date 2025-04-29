@@ -18,136 +18,228 @@ const map = new mapboxgl.Map({
   maxZoom: 18
 });
 
-// Function to load and display bike lanes
-async function addBikeLanes(sourceId, layerId, geojsonPath, color) {
-    try {
-        const response = await fetch(geojsonPath);
-        const bikeData = await response.json();
-        console.log(`${sourceId} data loaded:`, bikeData);
-
-        // Ensure the source is added only once
-        if (!map.getSource(sourceId)) {
-            map.addSource(sourceId, {
-                type: 'geojson',
-                data: bikeData
-            });
-
-            map.addLayer({
-                id: layerId,
-                type: 'line',
-                source: sourceId,
-                paint: {
-                    'line-color': color,
-                    'line-width': 3,
-                    'line-opacity': 0.7
-                }
-            });
-
-            console.log(`${sourceId} added to the map.`);
-        } else {
-            console.log(`Source ${sourceId} already exists.`);
-        }
-    } catch (error) {
-        console.error(`Error loading ${sourceId}:`, error);
-    }
+// Helper functions
+function minutesSinceMidnight(date) {
+  return date.getHours() * 60 + date.getMinutes();
 }
 
-// Function to add bike stations and traffic visualization
-async function addBikeStations(stationsJsonPath, trafficCsvUrl) {
-    try {
-        const response = await fetch(stationsJsonPath);
-        const stationData = await response.json();
-        console.log("Bluebikes station data loaded:", stationData);
+function formatTime(minutes) {
+  const date = new Date(0, 0, 0, 0, minutes);
+  return date.toLocaleString('en-US', { timeStyle: 'short' });
+}
 
-        let stations = stationData.data.stations;
+function getCoords(station) {
+  const point = new mapboxgl.LngLat(+station.lon, +station.lat);
+  const { x, y } = map.project(point);
+  return { cx: x, cy: y };
+}
 
-        // Load and process traffic data
-        const trips = await d3.csv(trafficCsvUrl);
-        console.log("Bike traffic data loaded:", trips.length, "entries");
+// Global variables
+let departuresByMinute = Array.from({ length: 1440 }, () => []);
+let arrivalsByMinute = Array.from({ length: 1440 }, () => []);
+let stations = [];
+let svg, circles;
+let radiusScale, stationFlow;
+let timeFilter = -1;
 
-        // Compute departures and arrivals per station
-        const departures = d3.rollup(trips, v => v.length, d => d.start_station_id);
-        const arrivals = d3.rollup(trips, v => v.length, d => d.end_station_id);
+// Function to prefilter trips
+function filterByMinute(tripsByMinute, minute) {
+  if (minute === -1) return tripsByMinute.flat();
+  let minMinute = (minute - 60 + 1440) % 1440;
+  let maxMinute = (minute + 60) % 1440;
+  if (minMinute > maxMinute) {
+    return tripsByMinute.slice(minMinute).concat(tripsByMinute.slice(0, maxMinute)).flat();
+  } else {
+    return tripsByMinute.slice(minMinute, maxMinute).flat();
+  }
+}
 
-        // Add traffic data to stations
-        stations = stations.map(station => {
-            let id = station.short_name;
-            station.arrivals = arrivals.get(id) ?? 0;
-            station.departures = departures.get(id) ?? 0;
-            station.totalTraffic = station.arrivals + station.departures;
-            return station;
+// Function to compute station traffic
+function computeStationTraffic(stations, timeFilter = -1) {
+  const departures = d3.rollup(
+    filterByMinute(departuresByMinute, timeFilter),
+    v => v.length,
+    d => d.start_station_id
+  );
+  const arrivals = d3.rollup(
+    filterByMinute(arrivalsByMinute, timeFilter),
+    v => v.length,
+    d => d.end_station_id
+  );
+
+  return stations.map(station => {
+    let id = station.short_name;
+    station.arrivals = arrivals.get(id) ?? 0;
+    station.departures = departures.get(id) ?? 0;
+    station.totalTraffic = station.arrivals + station.departures;
+    return station;
+  });
+}
+
+// Function to update scatterplot
+function updateScatterPlot(timeFilter) {
+  const updatedStations = computeStationTraffic(stations, timeFilter);
+
+  if (timeFilter === -1) {
+    radiusScale.range([0, 25]);
+  } else {
+    radiusScale.range([3, 50]);
+  }
+
+  circles = svg.selectAll('circle')
+    .data(updatedStations, d => d.short_name)
+    .join('circle')
+    .attr('r', d => radiusScale(d.totalTraffic))
+    .attr('stroke', 'white')
+    .attr('stroke-width', 1)
+    .attr('opacity', 0.6)
+    .style('pointer-events', 'auto')
+    .style('--departure-ratio', d => stationFlow(d.departures / d.totalTraffic))
+    .each(function(d) {
+      d3.select(this).selectAll('title').remove();
+      d3.select(this).append('title')
+        .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+    });
+
+  updatePositions();
+}
+
+// Function to update time display
+function updateTimeDisplay() {
+  const timeSlider = document.getElementById('time-slider');
+  const selectedTime = document.getElementById('selected-time');
+  const anyTimeLabel = document.getElementById('any-time');
+
+  timeFilter = Number(timeSlider.value);
+
+  if (timeFilter === -1) {
+    selectedTime.textContent = '';
+    anyTimeLabel.style.display = 'block';
+  } else {
+    selectedTime.textContent = formatTime(timeFilter);
+    anyTimeLabel.style.display = 'none';
+  }
+
+  updateScatterPlot(timeFilter);
+}
+
+// Function to update circle positions
+function updatePositions() {
+  circles.attr('cx', d => getCoords(d).cx)
+         .attr('cy', d => getCoords(d).cy);
+}
+
+// Create traffic legend dynamically
+function createLegend() {
+    const legend = d3.select('body').append('div')
+      .attr('class', 'legend')
+      .style('position', 'absolute')
+      .style('bottom', '80px')
+      .style('left', '50%')
+      .style('transform', 'translateX(-50%)')
+      .style('background', 'rgba(0,0,0,0.7)')
+      .style('padding', '10px')
+      .style('border-radius', '5px')
+      .style('color', 'white')
+      .style('display', 'flex')
+      .style('gap', '15px');
+  
+    legend.append('div').html('<span style="display:inline-block;width:12px;height:12px;background:steelblue;margin-right:5px;"></span> More Departures');
+    legend.append('div').html('<span style="display:inline-block;width:12px;height:12px;background:purple;margin-right:5px;"></span> Balanced');
+    legend.append('div').html('<span style="display:inline-block;width:12px;height:12px;background:darkorange;margin-right:5px;"></span> More Arrivals');
+}
+
+// Map load event
+map.on('load', async () => {
+    // Add bike lane layers
+    map.addSource('boston-bike', {
+        type: 'geojson',
+        data: 'assets/JSON/Existing_Bike_Network_2022.geojson'
+    });
+    map.addLayer({
+        id: 'boston-bike-lanes',
+        type: 'line',
+        source: 'boston-bike',
+        paint: {
+        'line-color': 'green',
+        'line-width': 3,
+        'line-opacity': 0.4
+        }
+    });
+
+    map.addSource('cambridge-bike', {
+        type: 'geojson',
+        data: 'assets/JSON/Existing_Bike_Network_Cambridge.geojson'
+    });
+    map.addLayer({
+        id: 'cambridge-bike-lanes',
+        type: 'line',
+        source: 'cambridge-bike',
+        paint: {
+        'line-color': 'green',
+        'line-width': 3,
+        'line-opacity': 0.4
+        }
+    });
+
+    // Create SVG overlay
+    svg = d3.select('#map').select('svg')
+        .style('position', 'absolute')
+        .style('z-index', 1)
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('pointer-events', 'none');
+
+    // Load station data
+    const stationData = await d3.json('assets/JSON/bluebikes-stations.json');
+    stations = stationData.data.stations;
+
+    // Load trip data
+    await d3.csv('assets/csv/bluebikes-traffic-2024-03.csv', (trip) => {
+        trip.started_at = new Date(trip.started_at);
+        trip.ended_at = new Date(trip.ended_at);
+        let startMin = minutesSinceMidnight(trip.started_at);
+        let endMin = minutesSinceMidnight(trip.ended_at);
+        departuresByMinute[startMin].push(trip);
+        arrivalsByMinute[endMin].push(trip);
+        return trip;
+    });
+
+    // Initialize scales
+    stations = computeStationTraffic(stations);
+    radiusScale = d3.scaleSqrt()
+        .domain([0, d3.max(stations, d => d.totalTraffic)])
+        .range([0, 25]);
+    stationFlow = d3.scaleQuantize()
+        .domain([0, 1])
+        .range([0, 0.5, 1]);
+
+    // Draw initial circles
+    circles = svg.selectAll('circle')
+        .data(stations, d => d.short_name)
+        .enter()
+        .append('circle')
+        .attr('r', d => radiusScale(d.totalTraffic))
+        .attr('fill', 'steelblue')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1)
+        .attr('opacity', 0.6)
+        .style('pointer-events', 'auto')
+        .style('--departure-ratio', d => stationFlow(d.departures / d.totalTraffic))
+        .each(function(d) {
+        d3.select(this).append('title')
+            .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
         });
 
-        console.log("Updated stations with traffic data:", stations);
+    updatePositions();
+    map.on('move', updatePositions);
+    map.on('zoom', updatePositions);
+    map.on('resize', updatePositions);
+    map.on('moveend', updatePositions);
 
-        // D3 scale to adjust marker size based on traffic
-        const radiusScale = d3.scaleSqrt()
-            .domain([0, d3.max(stations, d => d.totalTraffic)])
-            .range([2, 25]); // Min/max radius in pixels
-
-        // Select the Mapbox container and append an SVG element
-        const svg = d3.select('#map').append('svg')
-            .attr('width', '100%')
-            .attr('height', '100%')
-            .style('position', 'absolute')
-            .style('top', '0')
-            .style('left', '0')
-            .style('pointer-events', 'none');
-
-        // Helper function to convert lat/lon to screen coordinates
-        function getCoords(station) {
-            const point = new mapboxgl.LngLat(+station.lon, +station.lat);
-            const { x, y } = map.project(point);
-            return { cx: x, cy: y };
-        }
-
-        // Append circles for each station, sized by total traffic
-        const circles = svg.selectAll('circle')
-            .data(stations)
-            .enter()
-            .append('circle')
-            .attr('r', d => radiusScale(d.totalTraffic)) // Scale radius based on traffic
-            .attr('fill', 'steelblue')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 1)
-            .attr('opacity', 0.6)
-            .each(function (d) {
-                d3.select(this).append('title')
-                    .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
-            });
-
-        // Function to update circle positions when the map moves/zooms
-        function updatePositions() {
-            circles
-                .attr('cx', d => getCoords(d).cx)
-                .attr('cy', d => getCoords(d).cy);
-        }
-
-        // Initial position update when map loads
-        updatePositions();
-
-        // Update positions dynamically when the map moves
-        map.on('move', updatePositions);
-        map.on('zoom', updatePositions);
-        map.on('resize', updatePositions);
-        map.on('moveend', updatePositions);
-
-        console.log("Bike stations with traffic data added to the map.");
-    } catch (error) {
-        console.error("Error loading Bluebikes stations or traffic data:", error);
-    }
-}
-
-// Wait for the map to load before adding data
-map.on('load', async () => {
-    console.log("Map has loaded!");
-
-    // Add Boston bike lanes (green)
-    await addBikeLanes('bike-lanes-boston', 'bike-lane-layer-boston', 'assets/JSON/Existing_Bike_Network_2022.geojson', '#00FF00');
-
-    // Add Cambridge bike lanes (blue)
-    await addBikeLanes('bike-lanes-cambridge', 'bike-lane-layer-cambridge', 'assets/JSON/Existing_Bike_Network_Cambridge.geojson', '#0000FF');
-
-    // Add Bluebikes stations using D3 SVG overlay with traffic data
-    await addBikeStations('assets/JSON/bluebikes-stations.json', 'assets/csv/bluebikes-traffic-2024-03.csv');
+    // Initialize slider
+    const timeSlider = document.getElementById('time-slider');
+    timeSlider.addEventListener('input', updateTimeDisplay);
+    updateTimeDisplay();
+    createLegend(); // Create the legend
 });

@@ -11,16 +11,18 @@
     
     <header>
         <h1>🚴🏼‍♀️ Bikewatching</h1>
-        <label id="time-filter">
-            Filter by time: 
-            <input type="range" id="time-slider" min="-1" max="1440" step="1" value="-1">
-            <time id="selected-time"></time>
-            <em id="any-time">(any time)</em>
+        <label style="margin-left: auto;">
+            Filter by time:
+            <input id="time-slider" type="range" min="-1" max="1440" value="-1">
+            <time id="selected-time" style="display: block;"></time>
+            <em id="any-time" style="display: block; color: gray;">(any time)</em>
         </label>
     </header>
 
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-    <div id="map"></div>
+    <div id="map">
+        <svg></svg>
+    </div>
 
     <footer id="footer">
         <section id="contact" class="left">

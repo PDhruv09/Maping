@@ -22,6 +22,10 @@ header {
     margin-left: auto;
 }
 
+#time-slider {
+    width: 200px;
+}
+
 /* Display styles for selected time */
 #selected-time, #any-time {
     display: block;
