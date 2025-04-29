@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boston Bike Traffic Map – Project Overview</title>
+  <link  href="../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <h1>🚴 Boston Bike Traffic Map</h1>
+
+  <p>
+    This project is an interactive geospatial visualization of <strong>BlueBikes traffic in Boston and Cambridge</strong>.
+    It uses real-world data from March 2024 and is built using <strong>Mapbox GL JS</strong> and <strong>D3.js</strong>.
+  </p>
+
+  <h2>📊 Features</h2>
+  <ul>
+    <li>Mapbox-based background map with bike lanes overlayed (Boston & Cambridge)</li>
+    <li>Real-time SVG circles for every BlueBike station</li>
+    <li>Circle size represents total traffic; color shows traffic flow direction</li>
+    <li>Interactive time slider filters rides within 1-hour window</li>
+    <li>Legend explains color scale (arrivals vs. departures)</li>
+  </ul>
+
+  <h2>📁 Datasets Used</h2>
+  <ul>
+    <li><a href="https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv" target="_blank">BlueBikes Traffic – March 2024 (CSV)</a></li>
+    <li><a href="https://dsc106.com/labs/lab07/data/bluebikes-stations.json" target="_blank">BlueBikes Stations (JSON)</a></li>
+    <li><a href="https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022/about" target="_blank">Boston Bike Lanes (GeoJSON)</a></li>
+    <li><a href="https://data.cambridgema.gov/Transportation/Existing-Bike-Network/8i2y-efzv" target="_blank">Cambridge Bike Lanes (GeoJSON)</a></li>
+  </ul>
+
+  <h2>🛠️ Tools Used</h2>
+  <ul>
+    <li>Mapbox GL JS</li>
+    <li>D3.js (v7)</li>
+    <li>GeoJSON + CSV + JSON data</li>
+    <li>GitHub Pages for hosting</li>
+  </ul>
+
+  <h2>🔗 View the Interactive Map</h2>
+  <p>
+    👉 <a href="index.html">Launch the Map Visualization</a>
+  </p>
+
+  <footer>
+    <p><a href="home.html">← Back to Portfolio Home</a></p>
+  </footer>
+</body>
+</html>
