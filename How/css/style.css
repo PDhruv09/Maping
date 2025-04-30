@@ -109,11 +109,10 @@ a.cta:hover {
 
 /* Position and style the theme switcher dropdown */
 .color-scheme {
-  position: fixed;
+  position: static;
   top: 10px;
   right: 10px;
   z-index: 1000;
-  background-color: #f1f1f1;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -126,8 +125,6 @@ a.cta:hover {
   font-size: 0.9rem;
   padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: white;
 }
 
 /* Responsive */
