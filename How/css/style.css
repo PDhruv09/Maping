@@ -13,6 +13,32 @@ html, body {
     line-height: 1.6;
 }
 
+/* Navigation Menu Styling */
+#navbar {
+    display: flex;
+    justify-content: center; /* Align navigation to the right */
+    gap: 20px; /* Add spacing between links */
+    margin-right: 20px; /* Space from the right edge */
+    list-style: none;
+}
+
+#navbar a {
+    text-decoration: none;
+    padding: 10px 15px; /* Add padding around links */
+    transition: background-color 0.3s, color 0.3s; /* Smooth hover effects */
+}
+
+#navbar a:hover {
+    background-color: #444; /* Slightly darker background on hover */
+    color: #7acfee; /* Accent color on hover */
+    border-radius: 5px;
+}
+
+#navbar a.current {
+    font-weight: bold;
+    color: #7acfee; /* Highlight the current page link */
+}
+
 /* Content Container */
 body {
     max-width: 900px;
@@ -108,7 +134,7 @@ a.cta:hover {
 }
 
 /* Position and style the theme switcher dropdown */
-.color-scheme {
+#color-scheme {
   position: static;
   top: 10px;
   right: 10px;
@@ -120,7 +146,7 @@ a.cta:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.color-scheme select {
+#color-scheme select {
   margin-left: 6px;
   font-size: 0.9rem;
   padding: 2px 6px;

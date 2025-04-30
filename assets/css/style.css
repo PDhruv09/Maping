@@ -12,7 +12,7 @@ html, body {
 /* Navigation Menu Styling */
 #navbar {
     display: flex;
-    justify-content: flex-end; /* Align navigation to the right */
+    justify-content: center; /* Align navigation to the right */
     gap: 20px; /* Add spacing between links */
     margin-right: 20px; /* Space from the right edge */
     list-style: none;
@@ -151,7 +151,7 @@ svg circle:hover {
 }
 
 /* Position and style the theme switcher dropdown */
-.color-scheme {
+#color-scheme {
   position: static;
   top: 10px;
   right: 10px;
@@ -163,7 +163,7 @@ svg circle:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.color-scheme select {
+#color-scheme select {
   margin-left: 6px;
   font-size: 0.9rem;
   padding: 2px 6px;
