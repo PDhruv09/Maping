@@ -1,0 +1,146 @@
+/* Base Setup */
+html, body {
+    scroll-behavior: smooth;
+    color-scheme: light dark;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: system-ui, sans-serif;
+    background-color: #f9f9f9;
+    color: #222;
+    line-height: 1.6;
+}
+
+/* Content Container */
+body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1em;
+}
+
+/* Headings */
+h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5em;
+}
+
+h2 {
+    margin-top: 1.5em;
+    font-size: 1.4rem;
+}
+
+/* Paragraphs and Lists */
+p {
+    font-size: 1rem;
+    margin-bottom: 1em;
+}
+
+ul {
+    margin-left: 1.2em;
+    margin-bottom: 1.5em;
+}
+
+ul li {
+    margin-bottom: 0.5em;
+}
+
+/* Links */
+a {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* CTA Button Style Link */
+a.cta {
+    display: inline-block;
+    background-color: #1a73e8;
+    color: white;
+    padding: 0.6em 1.2em;
+    margin-top: 1em;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+a.cta:hover {
+    background-color: #0f5bb5;
+}
+
+/* Footer */
+#footer {
+    margin-top: auto;
+    padding: 20px 10px;
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-size: 14px;
+    background-color: #f2f2f2;
+}
+
+#footer .left,
+#footer .right {
+    width: 45%;
+}
+
+#footer .left {
+    text-align: left;
+}
+
+#footer .right {
+    text-align: right;
+}
+
+#footer a {
+    color: #1a73e8;
+}
+
+#footer a:hover {
+    text-decoration: underline;
+}
+
+/* Position and style the theme switcher dropdown */
+.color-scheme {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background-color: #f1f1f1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: system-ui, sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-scheme select {
+  margin-left: 6px;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #footer {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #footer .left,
+    #footer .right {
+        width: 100%;
+        text-align: center;
+        padding: 5px 0;
+    }
+}
